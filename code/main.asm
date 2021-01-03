@@ -1,61 +1,94 @@
-//********************************************************************************
-// Main assembly file.
+//****************************************************************
+//	Main assembly file for Zelda 1 Redux
 // All of the assembly files get linked together and compiled here.
-//********************************************************************************
+//****************************************************************
+
+// !!!WARNING!!!
+// This project depends on the compilation of the files to be in the precise order they are set in this file. DO NOT modify the order in which the ASM files are, or else the game might break!
+
 //****************************************
-// Rom info
+//	Rom info
 //****************************************
 arch nes.cpu		// set processor architecture (NES)
 banksize $4000		// set the size of each bank
 header			// rom has a header
 
 //****************************************
-//	iNES Header
+//	iNES Header		// Orginal header. You can`t have two headers in the file. This will not work along mapper conversion or needed expensions.
 //****************************************
 //	db $4E,$45,$53,$1A	// Header (NES $1A)
-//	db 08			// 8 x 16k PRG banks
-//	db 00			// 0 x 8k CHR banks
-//	db %00010010		// Mirroring: Vertical
-	// SRAM: Not used
-	// 512k Trainer: Not used
-	// 4 Screen VRAM: Not used
-	// Mapper: 5
+//	db $08			// 8 x 16k PRG banks
+//	db $00			// 0 x 8k CHR banks
+//	db %00010010		// ROM Settings
+//	//  |||||||^--- Mirroring: Vertical
+//	//  ||||||^--- SRAM: Yes
+//	//  |||||^--- 512k Trainer: Not used
+//	//  ||||^--- 4 Screen VRAM: Not used
+//	//  ^^^^--- Mapper: 1
 //	db %00000000		// RomType: NES
+//	//  ||||
+//	//  ^^^^--- Mapper: 
 //	db $00,$00,$00,$00	// iNES Tail
 //	db $00,$00,$00,$00
 
 //****************************************
-// Redux changes
+// 	Mapper conversion
 //****************************************
-incsrc code/redux.asm		// Main ASM code for Redux
+
+// Convert mapper from MMC1 to MMC3 or MMC5
+//incsrc code/animate.asm
+//incsrc code/MMC3.asm		// Convert Zelda 1 from MMC1 to MMC3
+incsrc code/MMC5.asm
+// This will make it possible to have animations in the game, and make a lot of free space for custom graphics and diagonal swing graphics (maybe)
 
 //****************************************
-// Gameplay changes
+//	Visual changes
 //****************************************
-incsrc code/bombs.asm		// Increase initial max bombs and upgrades to 10
-incsrc code/automap.asm		// Disassembly of the Automap Plus hack by snarfblam
-incsrc code/arrows.asm		// Arrow counter code by BogaaBogaa
-incsrc code/rupee.asm		// Rupee 999 counter code by BogaaBogaa
-incsrc code/move_maps.asm	// Change Hearts and Map positions in HUD
+incsrc code/gfx/graphics.asm		// Sprite/graphic changes
+incsrc code/gfx/palettes.asm		// Several palette changes
+incsrc code/gfx/title_screen.asm	// Title screen visual changes
+incsrc code/menus/caution_screen.asm	// Implement the CAUTION screen from the PRG1 version
+incsrc code/menus/file_select.asm	// Modifications to the File Select menus
+incsrc code/menus/hud_and_subscreen.asm	// Changes to both the HUD and the Subscreen
 
 //****************************************
-// Text changes
+//	Text changes
 //****************************************
-incsrc code/text.asm		// Relocalization of the game's script
-incsrc code/story.asm		// Rewrite of the game's story and intro texts
-incsrc code/credits.asm		// Rewrite of the game's credits sequences
+incsrc code/text/dialog.asm		// Relocalization of the game`s script. Adding adictional hints. 
+incsrc code/text/story.asm		// Rewrite of the game`s story and intro texts
+incsrc code/text/credits.asm		// Rewrite of the game`s credits sequences
+incsrc code/text/text_speed.asm		// Modify text parsing speed
 
 //****************************************
-// Visual changes
+//	Gameplay changes
 //****************************************
-incsrc code/graphics.asm	// Sprite/graphic changes
-incsrc code/title_screen.asm	// Title screen visual changes
-incsrc code/tunic_colors.asm	// Make blue tunic more vivid
+
+//incsrc code/file_select.asm		//!!Unfinished File Select changes
+
+incsrc code/gameplay/MMC5Features.asm
+incsrc code/gameplay/RefillStarupHealth.asm
+incsrc code/gameplay/arrows.asm		// Arrow counter code by BogaaBogaa
+incsrc code/gameplay/automap.asm	// Disassembly of the Automap Plus hack by snarfblam
+incsrc code/gameplay/bombs.asm		// Increase initial max bombs and upgrades to 10
+incsrc code/gameplay/item_toggle.asm	// Pressing Select toggles the selected B Button item from the inventory
+incsrc code/gameplay/manual_save.asm	// Save manually by pressing Pause and then Up+A (Button combo can be modified)
+incsrc code/gameplay/misc.asm		// Miscellaneous hacks
+incsrc code/gameplay/pols_voice.asm	// Kill Pols Voices by using Flute or Arrows
+incsrc code/gameplay/rupee.asm		// 999 Rupee counter code by BogaaBogaa
+incsrc code/gameplay/overworld_screens.asm	// Changes some columns for certain screens in the Overworld to not look as blocky
+incsrc code/gameplay/visible_secrets.asm	// Discernible secrets for bombable (cracked) walls in both Overworld and Dungeons, and burnable trees in the Overworld
+incsrc code/gameplay/move_maps.asm	// Change Hearts and Map positions in HUD (INCLUDE AFTER HUD, ARROWS, RUPEE AND AUTOMAP CODE!)
+//incsrc code/gfx/WaterFallAnimation.asm //Can`t be used with MMC5 They use the same hijack and this file is after the MMC5.ASM
+
 
 //****************************************
-// Optional patches
+//	Optional patches
 // Uncomment the desired Optional patches
 //****************************************
+
+// Include optional patches
+// Uncomment desired patches inside "optional.asm" for them to compile
+//*****************************************************************
 
 // Original NES Graphics
 // NOTE: This one CAN'T be combined with the LA DX Graphics
@@ -71,8 +104,9 @@ incsrc code/tunic_colors.asm	// Make blue tunic more vivid
 //incsrc code/optional/RearrangedBosses.asm
 
 // Increase bomb upgrades from 4 to 5
-//incsrc code/optional/BombUpgrades5.asm
+incsrc code/optional/BombUpgrades5.asm
 
-// Optional?
-// One of the MMC conversions, either MMC3 or MMC5, or Optimum
-// This will make it possible to have animations in the game, and make a lot of free space for custom graphics and diagonal swing graphics (maybe)
+// Hide back all of the secrets like in vanilla Zelda
+// This means no cracked walls nor discernible burnable trees
+//incsrc code/optional/OriginalHiddenSecrets.asm
+
